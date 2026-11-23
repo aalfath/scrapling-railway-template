@@ -52,7 +52,7 @@ Cursor, VS Code and other clients that take JSON:
 
 Then ask your agent to fetch a page with `make_request`, or with `browser_fetch_once` for pages that need JavaScript. Saved browser state files are written relative to `/data`.
 
-**Memory:** idle use is about 90 MB, and one Chromium page peaked at about 415 MB in our test, so one browser at a time fits Railway's 0.5 GB Free plan. Several browser sessions at once need 1 GB or more. A crash exits non-zero, so Railway restarts the service.
+**Memory:** the server idles at about 80 MB. On Railway's 0.5 GB Free-plan limit the HTTP tools and light browser pages (Wikipedia) work, but a heavy page such as a GitHub repo crashes the Chromium tab: the tool returns a "Page crashed" error and the server stays up. For browser tools on modern sites give the service 1 GB (our 1 GB test peaked at about 590 MB with every tool passing). A crash exits non-zero, so Railway restarts the service.
 
 **Security:** anyone with the token can make this service fetch any URL, including private addresses of other services in the same Railway project, so deploy it in its own project and treat the token like a password. To rotate it, change `SCRAPLING_MCP_AUTH_TOKEN` and redeploy. Respect each site's terms of service and robots.txt.
 

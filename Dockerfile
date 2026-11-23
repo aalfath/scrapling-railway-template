@@ -12,6 +12,7 @@ COPY railway_serve.py /opt/railway/railway_serve.py
 # /data is the Railway volume: the server's working directory, where browser_save_state
 # writes saved logins (cookies, local storage) so they survive redeploys.
 ENV HOME=/root \
+    MALLOC_ARENA_MAX=2 \
     SCRAPLING_DATA_DIR=/data \
     PORT=8000
 WORKDIR /data

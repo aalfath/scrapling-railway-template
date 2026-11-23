@@ -51,11 +51,6 @@ def _apply_low_memory_browser_flags():
         "--disable-site-isolation-trials",
         "--renderer-process-limit=1",
         "--js-flags=--max-old-space-size=192",
-        "--disable-gpu",
-        "--in-process-gpu",
-        "--no-zygote",
-        "--disable-extensions",
-        "--disable-component-extensions-with-background-pages",
     ]
     _base.STEALTH_ARGS = tuple(args)
     return True
@@ -110,7 +105,7 @@ def main() -> int:
     print(f"railway: Scrapling {__version__} MCP server on {host}:{port}, endpoint {where}, data dir {data_dir}", flush=True)
 
     if _apply_low_memory_browser_flags():
-        print("railway: low-memory Chromium flags on (one renderer, in-process GPU, no zygote, no site isolation)", flush=True)
+        print("railway: low-memory Chromium flags on (one renderer process, no site isolation, 192 MB JS heap)", flush=True)
 
     server = RailwayScraplingServer(auth_token=token)
     server.serve(True, host, port, allowed_hosts=allowed, allow_unauthenticated=False)

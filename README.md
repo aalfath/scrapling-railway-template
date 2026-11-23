@@ -75,5 +75,5 @@ By deploying Scrapling on Railway, you are one step closer to supporting a compl
 
 Optional variables not set by the template:
 
-* `SCRAPLING_LOW_MEMORY`: `auto` (default) turns on low-memory Chromium flags (one renderer process, no site isolation, 256 MB JS heap) when the service's memory limit is 1.5 GB or less; `1` forces them, `0` turns them off.
+* `SCRAPLING_LOW_MEMORY`: `auto` (default) turns on low-memory Chromium flags (one renderer process, no site isolation, 192 MB JS heap) when the service's memory limit is 1.5 GB or less; `1` forces them, `0` turns them off.
 * `SCRAPLING_ALLOWED_HOSTS` (comma-separated host names): turns on the MCP SDK's DNS-rebinding check for those hosts only. The bearer token already protects the endpoint, so it's off by default; if you set it, include every domain you use.

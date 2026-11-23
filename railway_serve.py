@@ -15,6 +15,43 @@ from scrapling.core.ai import ScraplingMCPServer
 TOKEN_ENV = "SCRAPLING_MCP_AUTH_TOKEN"
 
 
+def _memory_limit_bytes():
+    try:
+        raw = open("/sys/fs/cgroup/memory.max").read().strip()
+        return None if raw == "max" else int(raw)
+    except (OSError, ValueError):
+        return None
+
+
+def _apply_low_memory_browser_flags():
+    """On small plans, keep Chromium to fewer processes so one page fits in 0.5 GB.
+
+    SCRAPLING_LOW_MEMORY=1 forces it, 0 turns it off; by default it is on when the
+    container's memory limit is 1.5 GB or less. Site isolation starts a renderer
+    process per site (iframes included), which pushed GitHub pages past 0.5 GB.
+    """
+    mode = os.environ.get("SCRAPLING_LOW_MEMORY", "auto").strip().lower()
+    limit = _memory_limit_bytes()
+    if mode in ("0", "false", "no", "off"):
+        return False
+    if mode not in ("1", "true", "yes", "on") and (limit is None or limit > 1536 * 1024 * 1024):
+        return False
+    from scrapling.engines._browsers import _base
+
+    extra_disabled = "site-per-process,IsolateOrigins,BackForwardCache,MediaRouter,OptimizationHints"
+    args = []
+    for flag in _base.STEALTH_ARGS:
+        # Chromium keeps only the last --disable-features switch, so merge into the existing one.
+        if flag.startswith("--disable-features="):
+            flag = f"{flag},{extra_disabled}"
+        args.append(flag)
+    if not any(a.startswith("--disable-features=") for a in args):
+        args.append(f"--disable-features={extra_disabled}")
+    args += ["--disable-site-isolation-trials", "--renderer-process-limit=1", "--js-flags=--max-old-space-size=256"]
+    _base.STEALTH_ARGS = tuple(args)
+    return True
+
+
 class RailwayScraplingServer(ScraplingMCPServer):
     def _build_server(self, host, port):
         server = super()._build_server(host, port)
@@ -62,6 +99,9 @@ def main() -> int:
     public = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "").strip()
     where = f"https://{public}/mcp" if public else f"http://{host}:{port}/mcp"
     print(f"railway: Scrapling {__version__} MCP server on {host}:{port}, endpoint {where}, data dir {data_dir}", flush=True)
+
+    if _apply_low_memory_browser_flags():
+        print("railway: low-memory Chromium flags on (one renderer process, no site isolation)", flush=True)
 
     server = RailwayScraplingServer(auth_token=token)
     server.serve(True, host, port, allowed_hosts=allowed, allow_unauthenticated=False)

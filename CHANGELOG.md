@@ -8,3 +8,4 @@ First release of the Railway template.
 * MCP server in streamable-HTTP mode at `/mcp`, bearer token required (generated at deploy), `/healthz` for Railway's health check.
 * Volume at `/data` (working directory for saved browser state).
 * `tini` as PID 1; unexpected stops exit non-zero so Railway restarts the service.
+* Low-memory Chromium flags (one renderer process, no site isolation) when the memory limit is 1.5 GB or less, so one browser page fits the 0.5 GB Free plan. `SCRAPLING_LOW_MEMORY=0` turns them off.
